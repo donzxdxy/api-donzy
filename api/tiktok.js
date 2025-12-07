@@ -1,38 +1,69 @@
-const axios = require("axios");
 const cheerio = require("cheerio");
+const axios = require("axios");
 
-exports.handler = async (event) => {
-  try {
-    const url = event.queryStringParameters.url;
-    if (!url) return { statusCode: 400, body: '{"error":"input url"}' };
+const headers = {
+  "authority": "ttsave.app",
+  "accept": "application/json, text/plain, */*",
+  "origin": "https://ttsave.app",
+  "referer": "https://ttsave.app/en",
+  "user-agent": "Postify/1.0.0"
+};
 
-    const headers = {
-      "authority": "ttsave.app",
-      "accept": "application/json, text/plain, */*",
-      "origin": "https://ttsave.app",
-      "referer": "https://ttsave.app/en",
-      "user-agent": "Mozilla/5.0"
+const tiktokdl = {
+  submit: async function(url, referer) {
+    const headerx = { ...headers, referer };
+    const data = { query: url, language_id: "1" };
+    return axios.post("https://ttsave.app/download", data, { headers: headerx });
+  },
+
+  parse: function($) {
+    const description = $("p.text-gray-600").text().trim();
+    const dlink = {
+      nowm: $("a.w-full.text-white.font-bold").first().attr("href"),
+      audio: $('a[type="audio"]').attr("href")
     };
 
-    const data = { query: url, language_id: "1" };
-    const post = await axios.post("https://ttsave.app/download", data, { headers });
+    const slides = $('a[type="slide"]').map((i, el) => ({
+      number: i + 1,
+      url: $(el).attr("href")
+    })).get();
 
-    const $ = cheerio.load(post.data);
+    return { description, dlink, slides };
+  },
 
-    const description = $('p.text-gray-600').text().trim();
-    const nowm = $('a.w-full.text-white.font-bold').first().attr('href');
-    const audio = $('a[type="audio"]').attr('href');
+  fetchData: async function(link) {
+    const response = await this.submit(link, "https://ttsave.app/en");
+    const $ = cheerio.load(response.data);
+    const result = this.parse($);
 
     return {
-      statusCode: 200,
-      body: JSON.stringify({
-        status: true,
-        description,
-        video_nowm: nowm,
-        audio_url: audio
-      })
+      video_nowm: result.dlink.nowm,
+      audio_url: result.dlink.audio,
+      slides: result.slides,
+      description: result.description
     };
-  } catch (e) {
-    return { statusCode: 500, body: e.toString() };
+  }
+};
+
+exports.handler = async (event) => {
+  const url = event.queryStringParameters.url;
+  if (!url) {
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ error: "url parameter required" })
+    };
+  }
+
+  try {
+    const result = await tiktokdl.fetchData(url);
+    return {
+      statusCode: 200,
+      body: JSON.stringify({ status: true, result })
+    };
+  } catch (err) {
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: err.message })
+    };
   }
 };
