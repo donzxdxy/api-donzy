@@ -1,12 +1,12 @@
 exports.handler = async () => {
   return {
     statusCode: 200,
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      status: true,
-      message: "Welcome to TikTok API",
+      message: "API Donzy aktif!",
       endpoints: {
-        tiktok: "/.netlify/functions/tiktok?url=",
-        tiktokv2: "/.netlify/functions/tiktokv2?url="
+        tiktok: "/api/tiktok?url=",
+        tiktokv2: "/api/tiktokv2?url="
       }
     })
   };
