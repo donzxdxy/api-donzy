@@ -1,3 +1,18 @@
 [build]
   functions = "api"
   publish = "/"
+
+[[redirects]]
+  from = "/api"
+  to = "/.netlify/functions/home"
+  status = 200
+
+[[redirects]]
+  from = "/api/tiktok"
+  to = "/.netlify/functions/tiktok"
+  status = 200
+
+[[redirects]]
+  from = "/api/tiktokv2"
+  to = "/.netlify/functions/tiktokv2"
+  status = 200
