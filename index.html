@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>API DONZY</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<!-- FONT POPPINS -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-y... (pastikan integrity valid)" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+<style>
+:root {
+  --primary: #4361ee;
+  --success: #4cc9f0;
+  --warning: #f72585;
+  --danger: #e63946;
+  --glass-bg: rgba(255, 255, 255, 0.08);
+  --glass-border: rgba(255, 255, 255, 0.15);
+  --radius: 16px;
+  --shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(135deg, #7f53ac, #4361ee, #0d0630);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  color: #ffffff;
+}
+
+.container {
+  max-width: 780px;
+  width: 100%;
+}
+
+/* ==== BLUR OVERLAY ==== */
+.blur-layer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  backdrop-filter: blur(10px);
+  background: rgba(5, 5, 30, 0.6);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  z-index: 900;
+}
+
+.blur-layer.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ==== LOADING SPINNER ==== */
+.loader-box {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.8);
+  background: rgba(15, 20, 40, 0.92);
+  padding: 30px 40px;
+  border-radius: var(--radius);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow);
+  opacity: 0;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  z-index: 1000;
+  text-align: center;
+}
+
+.loader-box.show {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  border-top-color: #4cc9f0;
+  animation: spin 1s ease-in-out infinite;
+  margin: 0 auto 16px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loader-text {
+  font-size: 16px;
+  font-weight: 500;
+  color: #e0e0ff;
+}
+
+/* ==== TITLE ==== */
+.title {
+  text-align: center;
+  font-size: 36px;
+  font-weight: 800;
+  margin-bottom: 35px;
+  letter-spacing: 1.2px;
+  background: linear-gradient(90deg, #fff, #a0d2ff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+/* ==== FOLDER CARD ==== */
+.folder {
+  background: var(--glass-bg);
+  padding: 18px 22px;
+  border-radius: var(--radius);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.folder:hover {
+  transform: translateY(-3px);
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+}
+
+.folder span {
+  display: flex;
+  align-items: center;
+  font-size: 18px;
+  font-weight: 600;
+  gap: 12px;
+}
+
+.folder i {
+  transition: transform 0.3s ease;
+}
+
+.folder.open i.fa-chevron-down {
+  transform: rotate(180deg);
+}
+
+/* ==== DOWNLOAD CARD ==== */
+.download-card {
+  margin-top: 16px;
+  background: var(--glass-bg);
+  border-radius: var(--radius);
+  padding: 20px;
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(15px);
+  display: none;
+  animation: slideDown 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  box-shadow: var(--shadow);
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-15px) scaleY(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scaleY(1);
+  }
+}
+
+.card-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.card-row span {
+  font-size: 18px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ==== MODERN BUTTON ==== */
+.btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  color: white;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary), #3a0ca3);
+}
+.btn-primary:hover {
+  background: linear-gradient(135deg, #3a0ca3, var(--primary));
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+}
+
+.btn-success {
+  background: linear-gradient(135deg, #2ec4b6, #1a936f);
+}
+.btn-success:hover {
+  transform: scale(1.04);
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, var(--danger), #b91c1c);
+}
+.btn-danger:hover {
+  transform: scale(1.04);
+}
+
+/* ==== POPUP ==== */
+.popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: 94%;
+  max-width: 500px;
+  background: rgba(10, 12, 25, 0.95);
+  border-radius: var(--radius);
+  padding: 28px;
+  color: white;
+  transform: translate(-50%, -60%) scale(0.9);
+  opacity: 0;
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  z-index: 999;
+  display: none;
+  animation: none;
+}
+
+.popup.show {
+  display: block;
+  animation: popupIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes popupIn {
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+.popup h2 {
+  margin: 0 0 20px;
+  font-size: 22px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* ==== INPUT ==== */
+.input-box {
+  width: 100%;
+  padding: 14px 18px;
+  background: rgba(20, 24, 45, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  color: #e0e7ff;
+  font-size: 15px;
+  margin-bottom: 16px;
+  transition: all 0.3s;
+}
+
+.input-box:focus {
+  outline: none;
+  border-color: #4cc9f0;
+  box-shadow: 0 0 0 3px rgba(76, 201, 240, 0.2);
+}
+
+.input-box::placeholder {
+  color: #a0b0d0;
+}
+
+/* ==== RESULT CARD ==== */
+.result-card {
+  margin-top: 20px;
+  background: rgba(15, 20, 40, 0.6);
+  border-radius: 14px;
+  padding: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: none;
+  animation: fadeIn 0.5s ease forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.result-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.result-header i {
+  font-size: 20px;
+}
+
+.result-title {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.result-meta {
+  font-size: 14px;
+  color: #a0b0d0;
+  margin-bottom: 16px;
+}
+
+.result-thumb {
+  width: 100%;
+  border-radius: 12px;
+  margin-bottom: 16px;
+  display: block;
+  max-height: 220px;
+  object-fit: cover;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.result-links {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.result-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: rgba(30, 35, 65, 0.6);
+  border-radius: 10px;
+  transition: all 0.25s;
+}
+
+.result-link:hover {
+  background: rgba(50, 60, 100, 0.7);
+}
+
+.result-link i {
+  width: 24px;
+  text-align: center;
+  font-size: 16px;
+}
+
+.result-link a {
+  color: #d0e1ff;
+  text-decoration: none;
+  flex: 1;
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.result-link button {
+  background: none;
+  border: none;
+  color: #8899aa;
+  cursor: pointer;
+  font-size: 14px;
+  transition: color 0.2s;
+}
+
+.result-link button:hover {
+  color: #4cc9f0;
+}
+
+/* ==== TOAST ==== */
+.toast {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.8);
+  background: rgba(0, 0, 0, 0.85);
+  color: white;
+  padding: 16px 24px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 2000;
+  opacity: 0;
+  pointer-events: none;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+.toast.show {
+  animation: toastPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards,
+             fadeOut 0.4s 2.6s ease-in forwards;
+}
+
+@keyframes toastPop {
+  0% { transform: translate(-50%, -50%) scale(0.7); opacity: 0; }
+  60% { transform: translate(-50%, -50%) scale(1.05); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+}
+
+@keyframes fadeOut {
+  to { opacity: 0; }
+}
+
+.toast i {
+  font-size: 18px;
+}
+
+.toast.success { color: #64e986; }
+.toast.warning { color: #ffd43b; }
+.toast.error { color: #ff6b6b; }
+.toast.info { color: #4cc9f0; }
+
+/* Animasi pulse untuk loader text */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+.pulse {
+  animation: pulse 1.5s infinite;
+}
+</style>
+</head>
+
+<body>
+<div id="blur" class="blur-layer"></div>
+<div id="loader" class="loader-box">
+  <div class="spinner"></div>
+  <div class="loader-text pulse">Processing request...</div>
+</div>
+
+<div id="toast" class="toast">
+  <i class="fas fa-check-circle"></i>
+  <span>Success!</span>
+</div>
+
+<div class="container">
+  <h1 class="title">TIKTOK APIS DONZY</h1>
+
+  <div class="folder" onclick="toggleFolder(this)">
+    <span><i class="fas fa-download"></i> Downloader</span>
+    <i class="fas fa-chevron-down"></i>
+  </div>
+
+  <div id="downloadCard" class="download-card">
+    <div class="card-row">
+      <span><i class="fab fa-tiktok"></i> TikTok Downloader</span>
+      <button class="btn btn-primary" onclick="openPopup()">
+        <i class="fas fa-play-circle"></i> Execute
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- POPUP -->
+<div id="popup" class="popup">
+  <h2><i class="fab fa-tiktok"></i> TikTok Downloader</h2>
+
+  <input id="urlInput" class="input-box" placeholder="https://www.tiktok.com/@user/video/123..." />
+
+  <button class="btn btn-primary" onclick="getData()" style="width:100%">
+    <i class="fas fa-cloud-download-alt"></i> Fetch Data
+  </button>
+
+  <div id="resultCard" class="result-card">
+    <div class="result-header">
+      <i class="fas fa-video"></i>
+      <div>
+        <div class="result-title" id="videoTitle">Fetching...</div>
+        <div class="result-meta" id="videoMeta">-</div>
+      </div>
+    </div>
+    <img id="videoThumb" class="result-thumb" src="" alt="Thumbnail" onerror="this.style.display='none'" />
+    
+    <div class="result-links" id="downloadLinks">
+      <!-- Diisi via JS -->
+    </div>
+
+    <button class="btn btn-success" style="width:100%; margin-top:16px;" onclick="copyAllLinks()">
+      <i class="fas fa-copy"></i> Copy All Links
+    </button>
+  </div>
+
+  <button class="btn btn-danger" style="width:100%; margin-top:20px;" onclick="closePopup()">
+    <i class="fas fa-times"></i> Close
+  </button>
+</div>
+
+<script>
+function toggleFolder(elm) {
+  const card = document.getElementById("downloadCard");
+  const isOpen = elm.classList.contains("open");
+  if (isOpen) {
+    card.style.display = "none";
+    elm.classList.remove("open");
+  } else {
+    card.style.display = "block";
+    elm.classList.add("open");
+  }
+}
+
+function openPopup() {
+  const p = document.getElementById("popup");
+  p.classList.add("show");
+  document.getElementById("blur").classList.add("show");
+}
+
+function closePopup() {
+  const p = document.getElementById("popup");
+  p.classList.remove("show");
+  document.getElementById("blur").classList.remove("show");
+  // Reset result
+  document.getElementById("resultCard").style.display = "none";
+  document.getElementById("urlInput").value = "";
+}
+
+function showToast(message, type = "info", duration = 3000) {
+  const toast = document.getElementById("toast");
+  const icon = toast.querySelector("i");
+  toast.className = "toast " + type;
+  
+  switch(type) {
+    case "success":
+      icon.className = "fas fa-check-circle";
+      break;
+    case "warning":
+      icon.className = "fas fa-exclamation-triangle";
+      break;
+    case "error":
+      icon.className = "fas fa-times-circle";
+      break;
+    default:
+      icon.className = "fas fa-info-circle";
+  }
+  
+  toast.querySelector("span").textContent = message;
+  toast.classList.add("show");
+  
+  setTimeout(() => {
+    toast.classList.remove("show");
+  }, duration);
+}
+
+async function getData() {
+  const input = document.getElementById("urlInput");
+  const url = input.value.trim();
+
+  if (!url) {
+    showToast("URL cannot be empty", "warning");
+    input.focus();
+    return;
+  }
+
+  if (!url.includes("tiktok.com")) {
+    showToast("Please enter a valid TikTok URL", "warning");
+    return;
+  }
+
+  showLoading();
+
+  try {
+    // ⚠️ Ganti dengan endpoint asli kamu
+    const endpoint = `https://api-donzy.netlify.app/api/tiktok?url=${encodeURIComponent(url)}`;
+    
+    const res = await fetch(endpoint, { method: "GET" });
+    
+    // Toast status code dulu
+    let statusClass = "info";
+    if (res.status === 200) statusClass = "success";
+    else if (res.status >= 400 && res.status < 500) statusClass = "warning";
+    else if (res.status >= 500) statusClass = "error";
+    else if (res.status >= 300) statusClass = "warning";
+    
+    showToast(`Status: ${res.status} ${res.statusText}`, statusClass, 1800);
+
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}`);
+    }
+
+    const data = await res.json();
+
+    // Validasi respons
+    if (!data || data.status !== 200) {
+      throw new Error(data.message || "Invalid response");
+    }
+
+    renderResult(data);
+  } catch (err) {
+    console.error("API Error:", err);
+    showToast("Failed to fetch data. Check URL or try again.", "error");
+    document.getElementById("resultCard").style.display = "none";
+  } finally {
+    hideLoading();
+  }
+}
+
+function renderResult(data) {
+  const card = document.getElementById("resultCard");
+  document.getElementById("videoTitle").textContent = data.data.title || "Untitled";
+  document.getElementById("videoMeta").textContent = 
+    `${data.data.author || "Unknown"} • ${formatViews(data.data.views)} views`;
+  
+  const thumb = document.getElementById("videoThumb");
+  if (data.data.thumbnail) {
+    thumb.src = data.data.thumbnail;
+    thumb.style.display = "block";
+  } else {
+    thumb.style.display = "none";
+  }
+
+  const linksContainer = document.getElementById("downloadLinks");
+  linksContainer.innerHTML = "";
+
+  // Tambahkan link download
+  const links = [
+    { type: "video", label: "Video (HD)", url: data.data.video },
+    { type: "audio", label: "Audio Only", url: data.data.audio },
+    { type: "cover", label: "Cover Image", url: data.data.thumbnail }
+  ].filter(item => item.url);
+
+  links.forEach(link => {
+    const div = document.createElement("div");
+    div.className = "result-link";
+    div.innerHTML = `
+      <i class="fas fa-${link.type === 'video' ? 'film' : link.type === 'audio' ? 'music' : 'image'}"></i>
+      <a href="${link.url}" target="_blank">${link.label}</a>
+      <button onclick="copyLink('${link.url}')">
+        <i class="fas fa-copy"></i>
+      </button>
+    `;
+    linksContainer.appendChild(div);
+  });
+
+  card.style.display = "block";
+}
+
+function formatViews(n) {
+  if (n >= 1e9) return (n / 1e9).toFixed(1) + 'B';
+  if (n >= 1e6) return (n / 1e6).toFixed(1) + 'M';
+  if (n >= 1e3) return (n / 1e3).toFixed(1) + 'K';
+  return n;
+}
+
+function copyLink(url) {
+  navigator.clipboard.writeText(url)
+    .then(() => showToast("Link copied!", "success"))
+    .catch(() => showToast("Failed to copy", "error"));
+}
+
+function copyAllLinks() {
+  const links = Array.from(document.querySelectorAll(".result-link a"))
+    .map(a => a.href)
+    .join("\n");
+  
+  navigator.clipboard.writeText(links)
+    .then(() => showToast("All links copied!", "success"))
+    .catch(() => showToast("Failed to copy", "error"));
+}
+
+function showLoading() {
+  document.getElementById("blur").classList.add("show");
+  document.getElementById("loader").classList.add("show");
+}
+
+function hideLoading() {
+  document.getElementById("blur").classList.remove("show");
+  document.getElementById("loader").classList.remove("show");
+}
+
+// Close popup on ESC
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && document.getElementById("popup").classList.contains("show")) {
+    closePopup();
+  }
+});
+</script>
+
+</body>
+</html>
